@@ -1,6 +1,15 @@
 import { create } from 'zustand'
 
 const useStore = create((set) => ({
+  // Navigation
+  currentPage: 'landing', // 'landing', 'dashboard', 'insights', 'reports', 'settings'
+  setCurrentPage: (page) => set({ currentPage: page }),
+  
+  // Sidebar
+  sidebarOpen: true,
+  toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
+  setSidebarOpen: (open) => set({ sidebarOpen: open }),
+  
   // CSV Data
   csvData: null,
   csvHeaders: [],
@@ -32,6 +41,10 @@ const useStore = create((set) => ({
   darkMode: false,
   toggleDarkMode: () => set((state) => ({ darkMode: !state.darkMode })),
   setDarkMode: (mode) => set({ darkMode: mode }),
+  
+  // Export Modal
+  showExportModal: false,
+  setShowExportModal: (show) => set({ showExportModal: show }),
 }))
 
 export default useStore
