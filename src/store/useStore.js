@@ -10,41 +10,41 @@ const useStore = create((set) => ({
   toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
   setSidebarOpen: (open) => set({ sidebarOpen: open }),
   
-  // CSV Data
+  //New state for csv data
+  uploadedFiles:  [],
   csvData: null,
-  csvHeaders: [],
-  fileName: '',
-  
-  // Set CSV Data
-  setCsvData: (data, headers, fileName) => set({
-    csvData: data,
-    csvHeaders: headers,
-    fileName: fileName
-  }),
-  
-  // Clear CSV Data
-  clearCsvData: () => set({
+  dataHeaders: [],
+  dataStats: {},
+  isProcessing: false,
+  uploadError: null,
+
+  //New actions for csv data
+  setUploadedFiles: (files) => set({ uploadedFiles: files }),
+  addUploadedFile: (file) => set((state) => ({
+    uploadedFiles: [...state.uploadedFiles, file]
+  })),
+  removeUploadedFile: (fileId) => set((state) => ({
+    uploadedFiles: state.uploadedFiles.filter(file => file.id !== fileId)
+  })),
+  setCsvData: (data) => set({ csvData: data }),
+  setDataColumns: (columns) => set({ dataColumns: columns }),
+  setDataStats: (stats) => set({ dataStats: stats }),
+  setIsProcessing: (processing) => set({ isProcessing: processing }),
+  setUploadError: (error) => set({ uploadError: error }),
+  clearAllData: () => set({
+    uploadedFiles: [],
     csvData: null,
-    csvHeaders: [],
-    fileName: ''
+    dataColumns: [],
+    dataStats: {},
+    uploadError: null
   }),
-  
-  // AI Insights
-  aiInsights: null,
-  isLoadingInsights: false,
-  
-  // Set AI Insights
-  setAiInsights: (insights) => set({ aiInsights: insights }),
-  setLoadingInsights: (loading) => set({ isLoadingInsights: loading }),
   
   // Dark Mode
   darkMode: false,
   toggleDarkMode: () => set((state) => ({ darkMode: !state.darkMode })),
   setDarkMode: (mode) => set({ darkMode: mode }),
   
-  // Export Modal
-  showExportModal: false,
-  setShowExportModal: (show) => set({ showExportModal: show }),
+
 }))
 
 export default useStore

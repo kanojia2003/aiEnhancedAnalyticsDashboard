@@ -1,12 +1,28 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Upload, FileText, X, CheckCircle } from 'lucide-react'
+import { Upload, FileText, X, CheckCircle, AlertCircle, Loader2, Eye } from 'lucide-react'
 import useStore from '../store/useStore'
+// Import CSV parser utilities
+import { parseCSVFile, validateCSV, inferColumnTypes, getDataSummary } from '../utils/csvParser'
+// Import new components
+import DataTable from '../components/DataTable'
+import DataStats from '../components/DataStats'
 
 const UploadDataPage = () => {
   const [dragActive, setDragActive] = useState(false)
   const [uploadedFile, setUploadedFile] = useState(null)
-  const { setCurrentPage } = useStore()
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [processingError, setProcessingError] = useState(null)
+  const [processingResults, setProcessingResults] = useState(null)
+  const [showPreview, setShowPreview] = useState(false)
+  
+  const { 
+    setCurrentPage, 
+    setCsvData, 
+    setDataColumns, 
+    setDataStats,
+    setUploadError 
+  } = useStore()
 
   const handleDrag = (e) => {
     e.preventDefault()
@@ -36,30 +52,131 @@ const UploadDataPage = () => {
   }
 
   const handleFile = (file) => {
-    if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
-      setUploadedFile(file)
-    } else {
-      alert('Please upload a CSV file')
+    // Reset previous state
+    setProcessingError(null)
+    setProcessingResults(null)
+    setShowPreview(false)
+    
+    // Validate file type
+    if (!file.type.includes('csv') && !file.name.endsWith('.csv')) {
+      setProcessingError('Invalid file type. Please upload a CSV file.')
+      return
     }
+    
+    // Validate file size (10MB max)
+    const maxSize = 10 * 1024 * 1024 // 10MB in bytes
+    if (file.size > maxSize) {
+      setProcessingError('File is too large. Maximum size is 10MB.')
+      return
+    }
+    
+    setUploadedFile(file)
   }
 
   const removeFile = () => {
     setUploadedFile(null)
+    setProcessingError(null)
+    setProcessingResults(null)
+    setShowPreview(false)
   }
 
-  const processFile = () => {
-    // Here you would parse the CSV using PapaParse
-    // For now, just navigate to dashboard
+  const processFile = async () => {
+    if (!uploadedFile) return
+    
+    setIsProcessing(true)
+    setProcessingError(null)
+    
+    try {
+      console.log('📄 Starting CSV parsing...')
+      
+      // Step 1: Parse CSV file
+      const parseResult = await parseCSVFile(uploadedFile)
+      
+      if (parseResult.errors && parseResult.errors.length > 0) {
+        throw new Error(`CSV parsing failed: ${parseResult.errors[0].message}`)
+      }
+      
+      const { data } = parseResult
+      
+      if (!data || data.length === 0) {
+        throw new Error('CSV file is empty or contains no valid data')
+      }
+      
+      console.log('✅ Parsing complete! Rows:', data.length)
+      
+      // Step 2: Validate data
+      console.log('🔍 Validating data...')
+      const validation = validateCSV(data)
+      console.log('Validation result:', validation)
+      
+      // Step 3: Infer column types
+      console.log('🔬 Inferring column types...')
+      const columns = inferColumnTypes(data)
+      console.log('Column types:', columns)
+      
+      // Step 4: Generate summary statistics
+      console.log('📊 Generating summary...')
+      const summary = getDataSummary(data)
+      console.log('Summary:', summary)
+      
+      // Store results
+      const results = {
+        data,
+        columns,
+        validation,
+        summary,
+        fileName: uploadedFile.name
+      }
+      
+      setProcessingResults(results)
+      
+      // Save to Zustand store
+      setCsvData(data)
+      setDataColumns(columns)
+      setDataStats(summary)
+      
+      console.log('🎉 Processing complete!')
+      
+      // Show preview
+      setShowPreview(true)
+      
+    } catch (error) {
+      console.error('❌ Error processing CSV:', error)
+      setProcessingError(error.message || 'Failed to process CSV file')
+      setUploadError(error.message)
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+  
+  const navigateToDashboard = () => {
     setCurrentPage('dashboard')
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-7xl mx-auto space-y-6">
       {/* Page Header */}
       <div>
         <h1 className="text-3xl font-bold text-white mb-2">Upload Your Data</h1>
         <p className="text-gray-400">Upload a CSV file to start analyzing your data</p>
       </div>
+      
+      {/* Processing Error */}
+      {processingError && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-red-500/10 border border-red-500/30 rounded-xl p-4"
+        >
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" />
+            <div>
+              <h4 className="text-red-400 font-semibold mb-1">Error Processing File</h4>
+              <p className="text-red-200/80 text-sm">{processingError}</p>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       {/* Upload Area */}
       <motion.div
@@ -142,7 +259,7 @@ const UploadDataPage = () => {
         )}
 
         {/* Action Buttons */}
-        {uploadedFile && (
+        {uploadedFile && !processingResults && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -150,19 +267,90 @@ const UploadDataPage = () => {
           >
             <button
               onClick={processFile}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+              disabled={isProcessing}
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              Process & Analyze
+              {isProcessing ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                'Process & Analyze'
+              )}
             </button>
             <button
               onClick={removeFile}
-              className="px-6 py-3 rounded-lg border border-gray-600 text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+              disabled={isProcessing}
+              className="px-6 py-3 rounded-lg border border-gray-600 text-gray-400 hover:bg-gray-700 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancel
             </button>
           </motion.div>
         )}
+        
+        {/* Success & Navigate to Dashboard */}
+        {processingResults && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mt-6 flex gap-4"
+          >
+            <button
+              onClick={navigateToDashboard}
+              className="flex-1 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
+            >
+              <CheckCircle className="w-5 h-5" />
+              View in Dashboard
+            </button>
+            <button
+              onClick={() => setShowPreview(!showPreview)}
+              className="px-6 py-3 rounded-lg border border-gray-600 text-gray-400 hover:bg-gray-700 hover:text-white transition-colors flex items-center gap-2"
+            >
+              <Eye className="w-5 h-5" />
+              {showPreview ? 'Hide Preview' : 'Show Preview'}
+            </button>
+            <button
+              onClick={removeFile}
+              className="px-6 py-3 rounded-lg border border-gray-600 text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+            >
+              Upload New
+            </button>
+          </motion.div>
+        )}
       </motion.div>
+      
+      {/* Processing Results */}
+      {processingResults && showPreview && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-6"
+        >
+          {/* Data Statistics */}
+          <DataStats
+            summary={processingResults.summary}
+            columns={processingResults.columns}
+            validation={processingResults.validation}
+          />
+          
+          {/* Data Preview Table */}
+          <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700">
+            <div className="mb-4">
+              <h3 className="text-xl font-semibold text-white mb-1">Data Preview</h3>
+              <p className="text-sm text-gray-400">
+                Showing first {Math.min(processingResults.data.length, 10)} rows of {processingResults.data.length} total
+              </p>
+            </div>
+            
+            <DataTable
+              data={processingResults.data}
+              columns={processingResults.columns}
+              rowsPerPage={10}
+            />
+          </div>
+        </motion.div>
+      )}
 
       {/* Instructions */}
       <motion.div
