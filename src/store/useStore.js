@@ -44,6 +44,20 @@ const useStore = create((set) => ({
   toggleDarkMode: () => set((state) => ({ darkMode: !state.darkMode })),
   setDarkMode: (mode) => set({ darkMode: mode }),
   
+  // Chart Configurations
+  chartConfigs: [],
+  addChartConfig: (config) => set((state) => ({
+    chartConfigs: [...state.chartConfigs, config]
+  })),
+  updateChartConfig: (id, updatedConfig) => set((state) => ({
+    chartConfigs: state.chartConfigs.map(config => 
+      config.id === id ? { ...config, ...updatedConfig } : config
+    )
+  })),
+  removeChartConfig: (id) => set((state) => ({
+    chartConfigs: state.chartConfigs.filter(config => config.id !== id)
+  })),
+  clearChartConfigs: () => set({ chartConfigs: [] }),
 
 }))
 

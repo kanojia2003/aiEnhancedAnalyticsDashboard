@@ -1,209 +1,249 @@
-import { motion } from 'framer-motion'
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
-import { BarChart3, TrendingUp, PieChart as PieChartIcon, Activity } from 'lucide-react'
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import {
+  Plus,
+  Upload,
+  AlertCircle,
+  LayoutGrid,
+  Download,
+  RefreshCw,
+} from 'lucide-react';
+import useStore from '../store/useStore';
+import ChartConfigurator from '../components/ChartConfigurator';
+import ChartGrid from '../components/ChartGrid';
 
 const DashboardPage = () => {
-  // Sample data for Revenue Trends
-  const revenueData = [
-    { month: 'Jan', value: 4200 },
-    { month: 'Feb', value: 3100 },
-    { month: 'Mar', value: 5800 },
-    { month: 'Apr', value: 5200 },
-    { month: 'May', value: 6500 },
-    { month: 'Jun', value: 6000 },
-  ]
+  const { 
+    csvData, 
+    dataColumns, 
+    dataStats,
+    chartConfigs, 
+    addChartConfig, 
+    updateChartConfig, 
+    removeChartConfig, 
+    setCurrentPage 
+  } = useStore();
+  const [showConfigurator, setShowConfigurator] = useState(false);
+  const [editingChart, setEditingChart] = useState(null);
 
-  // Sample data for User Growth
-  const userGrowthData = [
-    { week: 'Week 1', users: 1200 },
-    { week: 'Week 2', users: 2100 },
-    { week: 'Week 3', users: 1800 },
-    { week: 'Week 4', users: 2500 },
-  ]
+  // Handle opening configurator for new chart
+  const handleAddChart = () => {
+    setEditingChart(null);
+    setShowConfigurator(true);
+  };
 
-  // Sample data for Device Distribution
-  const deviceData = [
-    { name: 'Desktop', value: 45 },
-    { name: 'Mobile', value: 35 },
-    { name: 'Tablet', value: 20 },
-  ]
+  // Handle opening configurator for editing
+  const handleEditChart = (config) => {
+    setEditingChart(config);
+    setShowConfigurator(true);
+  };
 
-  // Sample data for Performance Metrics
-  const performanceData = [
-    { x: 100, y: 200 },
-    { x: 120, y: 100 },
-    { x: 170, y: 300 },
-    { x: 140, y: 250 },
-    { x: 150, y: 400 },
-    { x: 110, y: 280 },
-  ]
+  // Handle saving chart config
+  const handleSaveChart = (config) => {
+    if (editingChart) {
+      updateChartConfig(editingChart.id, config);
+    } else {
+      addChartConfig(config);
+    }
+    setShowConfigurator(false);
+    setEditingChart(null);
+  };
 
-  const COLORS = ['#3b82f6', '#10b981', '#6366f1']
+  // Handle deleting chart
+  const handleDeleteChart = (id) => {
+    if (confirm('Are you sure you want to delete this chart?')) {
+      removeChartConfig(id);
+    }
+  };
+
+  // Handle chart reorder
+  const handleChartReorder = (newOrder) => {
+    // Update the order in store
+    newOrder.forEach((config, index) => {
+      updateChartConfig(config.id, { ...config, order: index });
+    });
+  };
+
+  // Handle refresh data
+  const handleRefresh = () => {
+    // Force re-render by updating configs
+    chartConfigs.forEach(config => {
+      updateChartConfig(config.id, { ...config });
+    });
+  };
+
+  // No data uploaded state
+  if (!csvData || csvData.length === 0) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <Upload className="w-16 h-16 mx-auto mb-4 text-gray-600" />
+          <h2 className="text-2xl font-bold text-white mb-2">No Data Available</h2>
+          <p className="text-gray-400 mb-6">Upload CSV data to create dynamic charts</p>
+          <button
+            onClick={() => setCurrentPage('upload')}
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Upload Data
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-white mb-2">Dashboard Overview</h1>
-        <p className="text-gray-400">Monitor your key metrics and insights in real-time</p>
-      </div>
-
-      {/* Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Revenue Trends */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="bg-gray-800 rounded-2xl p-6 border border-gray-700"
-        >
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
-                <BarChart3 className="w-5 h-5 text-blue-400" />
-              </div>
-              <h3 className="text-xl font-semibold text-white">Revenue Trends</h3>
-            </div>
-          </div>
-          <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={revenueData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis dataKey="month" stroke="#9ca3af" />
-              <YAxis stroke="#9ca3af" />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: '#1f2937',
-                  border: '1px solid #374151',
-                  borderRadius: '8px',
-                  color: '#fff'
-                }}
-              />
-              <Bar dataKey="value" fill="#3b82f6" radius={[8, 8, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </motion.div>
-
-        {/* User Growth */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="bg-gray-800 rounded-2xl p-6 border border-gray-700"
-        >
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-green-400" />
-              </div>
-              <h3 className="text-xl font-semibold text-white">User Growth</h3>
-            </div>
-          </div>
-          <ResponsiveContainer width="100%" height={250}>
-            <LineChart data={userGrowthData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis dataKey="week" stroke="#9ca3af" />
-              <YAxis stroke="#9ca3af" />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: '#1f2937',
-                  border: '1px solid #374151',
-                  borderRadius: '8px',
-                  color: '#fff'
-                }}
-              />
-              <Line
-                type="monotone"
-                dataKey="users"
-                stroke="#3b82f6"
-                strokeWidth={3}
-                dot={{ fill: '#3b82f6', r: 6 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </motion.div>
-
-        {/* Device Distribution */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="bg-gray-800 rounded-2xl p-6 border border-gray-700"
-        >
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
-                <PieChartIcon className="w-5 h-5 text-purple-400" />
-              </div>
-              <h3 className="text-xl font-semibold text-white">Device Distribution</h3>
-            </div>
-          </div>
-          <ResponsiveContainer width="100%" height={250}>
-            <PieChart>
-              <Pie
-                data={deviceData}
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={90}
-                paddingAngle={5}
-                dataKey="value"
+      {/* Page Header with Stats */}
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-white mb-2">Dashboard Overview</h1>
+          <p className="text-gray-400">
+            {chartConfigs.length > 0
+              ? `Displaying ${chartConfigs.length} chart${chartConfigs.length !== 1 ? 's' : ''} from ${dataStats?.rowCount || 0} rows`
+              : 'Create charts to visualize your data'}
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          {chartConfigs.length > 0 && (
+            <>
+              <button
+                onClick={handleRefresh}
+                className="flex items-center gap-2 px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                title="Refresh charts"
               >
-                {deviceData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: '#1f2937',
-                  border: '1px solid #374151',
-                  borderRadius: '8px',
-                  color: '#fff'
-                }}
-              />
-              <Legend
-                wrapperStyle={{ color: '#9ca3af' }}
-                iconType="circle"
-              />
-            </PieChart>
-          </ResponsiveContainer>
-        </motion.div>
+                <RefreshCw className="w-4 h-4" />
+                <span className="hidden sm:inline">Refresh</span>
+              </button>
+              <button
+                className="flex items-center gap-2 px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                title="Export dashboard"
+              >
+                <Download className="w-4 h-4" />
+                <span className="hidden sm:inline">Export</span>
+              </button>
+            </>
+          )}
+          <button
+            onClick={handleAddChart}
+            className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Plus className="w-5 h-5" />
+            <span>Add Chart</span>
+          </button>
+        </div>
+      </div>
 
-        {/* Performance Metrics */}
+      {/* Data Summary Cards (when charts exist) */}
+      {chartConfigs.length > 0 && dataStats && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-gradient-to-br from-blue-500/20 to-blue-600/10 border border-blue-500/30 rounded-xl p-4"
+          >
+            <div className="flex items-center gap-3">
+              <LayoutGrid className="w-8 h-8 text-blue-400" />
+              <div>
+                <p className="text-sm text-gray-400">Total Charts</p>
+                <p className="text-2xl font-bold text-white">{chartConfigs.length}</p>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="bg-gradient-to-br from-green-500/20 to-green-600/10 border border-green-500/30 rounded-xl p-4"
+          >
+            <div className="flex items-center gap-3">
+              <LayoutGrid className="w-8 h-8 text-green-400" />
+              <div>
+                <p className="text-sm text-gray-400">Data Rows</p>
+                <p className="text-2xl font-bold text-white">{dataStats.rowCount?.toLocaleString()}</p>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-gradient-to-br from-purple-500/20 to-purple-600/10 border border-purple-500/30 rounded-xl p-4"
+          >
+            <div className="flex items-center gap-3">
+              <LayoutGrid className="w-8 h-8 text-purple-400" />
+              <div>
+                <p className="text-sm text-gray-400">Columns</p>
+                <p className="text-2xl font-bold text-white">{dataStats.columnCount}</p>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-gradient-to-br from-orange-500/20 to-orange-600/10 border border-orange-500/30 rounded-xl p-4"
+          >
+            <div className="flex items-center gap-3">
+              <LayoutGrid className="w-8 h-8 text-orange-400" />
+              <div>
+                <p className="text-sm text-gray-400">Data Quality</p>
+                <p className="text-2xl font-bold text-white">{dataStats.qualityScore}%</p>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Charts Grid or Empty State */}
+      {chartConfigs.length === 0 ? (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="bg-gray-800 rounded-2xl p-6 border border-gray-700"
+          className="bg-gray-800 rounded-2xl p-12 border border-gray-700 text-center"
         >
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-indigo-500/20 rounded-lg flex items-center justify-center">
-                <Activity className="w-5 h-5 text-indigo-400" />
-              </div>
-              <h3 className="text-xl font-semibold text-white">Performance Metrics</h3>
-            </div>
+          <div className="max-w-md mx-auto">
+            <AlertCircle className="w-12 h-12 mx-auto mb-4 text-gray-600" />
+            <h3 className="text-xl font-semibold text-white mb-2">No Charts Created Yet</h3>
+            <p className="text-gray-400 mb-6">
+              Start by creating your first chart to visualize your CSV data
+            </p>
+            <button
+              onClick={handleAddChart}
+              className="flex items-center gap-2 mx-auto px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <Plus className="w-5 h-5" />
+              Create First Chart
+            </button>
           </div>
-          <ResponsiveContainer width="100%" height={250}>
-            <ScatterChart>
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis type="number" dataKey="x" stroke="#9ca3af" />
-              <YAxis type="number" dataKey="y" stroke="#9ca3af" />
-              <Tooltip
-                cursor={{ strokeDasharray: '3 3' }}
-                contentStyle={{
-                  backgroundColor: '#1f2937',
-                  border: '1px solid #374151',
-                  borderRadius: '8px',
-                  color: '#fff'
-                }}
-              />
-              <Scatter data={performanceData} fill="#3b82f6" />
-            </ScatterChart>
-          </ResponsiveContainer>
         </motion.div>
-      </div>
-    </div>
-  )
-}
+      ) : (
+        <ChartGrid
+          configs={chartConfigs}
+          data={csvData}
+          onEdit={handleEditChart}
+          onDelete={handleDeleteChart}
+          onReorder={handleChartReorder}
+        />
+      )}
 
-export default DashboardPage
+      {/* Chart Configurator Modal */}
+      {showConfigurator && (
+        <ChartConfigurator
+          data={csvData}
+          columns={dataColumns}
+          initialConfig={editingChart}
+          onSave={handleSaveChart}
+          onCancel={() => {
+            setShowConfigurator(false);
+            setEditingChart(null);
+          }}
+        />
+      )}
+    </div>
+  );
+};
+
+export default DashboardPage;
