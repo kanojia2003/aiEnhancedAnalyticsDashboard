@@ -32,8 +32,6 @@ export const prepareBarChartData = (data, xColumn, yColumn, aggregation = 'sum')
   if (!data || data.length === 0) return []
   if (!xColumn || !yColumn) return []
 
-  console.log(`📊 Preparing Bar Chart: ${xColumn} vs ${yColumn} (${aggregation})`)
-
   // Group data by X column
   const grouped = data.reduce((acc, row) => {
     const xValue = row[xColumn]
@@ -103,7 +101,6 @@ export const prepareBarChartData = (data, xColumn, yColumn, aggregation = 'sum')
   // Sort by value descending for better visualization
   result.sort((a, b) => b.value - a.value)
 
-  console.log(`✅ Bar Chart data prepared: ${result.length} categories`)
   return result
 }
 
@@ -126,8 +123,6 @@ export const prepareBarChartData = (data, xColumn, yColumn, aggregation = 'sum')
 export const prepareLineChartData = (data, xColumn, yColumn, aggregation = 'avg') => {
   if (!data || data.length === 0) return []
   if (!xColumn || !yColumn) return []
-
-  console.log(`📈 Preparing Line Chart: ${xColumn} vs ${yColumn}`)
 
   // Group by X column (might be dates or categories)
   const grouped = data.reduce((acc, row) => {
@@ -205,7 +200,6 @@ export const prepareLineChartData = (data, xColumn, yColumn, aggregation = 'avg'
     return String(a.name).localeCompare(String(b.name))
   })
 
-  console.log(`✅ Line Chart data prepared: ${result.length} points`)
   return result
 }
 
@@ -228,8 +222,6 @@ export const prepareLineChartData = (data, xColumn, yColumn, aggregation = 'avg'
 export const preparePieChartData = (data, categoryColumn, valueColumn = null, topN = null) => {
   if (!data || data.length === 0) return []
   if (!categoryColumn) return []
-
-  console.log(`🥧 Preparing Pie Chart: ${categoryColumn}${valueColumn ? ` weighted by ${valueColumn}` : ' (count)'}`)
 
   // Group and aggregate
   const grouped = data.reduce((acc, row) => {
@@ -284,7 +276,6 @@ export const preparePieChartData = (data, categoryColumn, valueColumn = null, to
     ]
   }
 
-  console.log(`✅ Pie Chart data prepared: ${result.length} categories`)
   return result
 }
 
@@ -308,8 +299,6 @@ export const prepareScatterData = (data, xColumn, yColumn, nameColumn = null) =>
   if (!data || data.length === 0) return []
   if (!xColumn || !yColumn) return []
 
-  console.log(`📍 Preparing Scatter Plot: ${xColumn} vs ${yColumn}`)
-
   const result = data
     .map((row, index) => {
       const xValue = parseFloat(row[xColumn])
@@ -328,7 +317,6 @@ export const prepareScatterData = (data, xColumn, yColumn, nameColumn = null) =>
     })
     .filter(point => point !== null) // Remove invalid points
 
-  console.log(`✅ Scatter Plot data prepared: ${result.length} points`)
   return result
 }
 
@@ -369,8 +357,6 @@ export const suggestChartType = (columns, xColumn = null, yColumn = null) => {
   if (xColumn && yColumn) {
     const xType = getColumnType(xColumn)
     const yType = getColumnType(yColumn)
-
-    console.log(`🤖 Analyzing: ${xColumn} (${xType}) vs ${yColumn} (${yType})`)
 
     // Both numeric → Scatter plot
     if (xType === 'number' && yType === 'number') {
@@ -482,8 +468,6 @@ export const aggregateData = (data, groupByColumn, valueColumn, operation = 'sum
   if (!data || data.length === 0) return []
   if (!groupByColumn) return []
 
-  console.log(`🔢 Aggregating: ${valueColumn} by ${groupByColumn} (${operation})`)
-
   const grouped = data.reduce((acc, row) => {
     const groupKey = String(row[groupByColumn] || 'null')
     
@@ -538,7 +522,6 @@ export const aggregateData = (data, groupByColumn, valueColumn, operation = 'sum
     }
   })
 
-  console.log(`✅ Aggregated to ${result.length} groups`)
   return result
 }
 

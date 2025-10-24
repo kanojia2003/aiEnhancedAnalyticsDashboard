@@ -65,7 +65,6 @@ const retryWithBackoff = async (fn, retries = OPENAI_CONFIG.maxRetries) => {
       
       // Only retry on server errors (5xx) or network issues
       const delay = OPENAI_CONFIG.retryDelay * Math.pow(2, i);
-      console.log(`⚠️ Retry ${i + 1}/${retries} after ${delay}ms... (Error: ${error.status || 'Network'})`);
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
@@ -131,8 +130,6 @@ const canMakeApiCall = () => {
  * Analyze CSV data and generate comprehensive insights
  */
 export const analyzeData = async (csvData, columns, apiKey = null) => {
-  console.log('🤖 Starting AI data analysis...');
-  
   // Check rate limit before proceeding
   canMakeApiCall();
   
@@ -210,8 +207,6 @@ Format your response as JSON with this structure:
   try {
     const client = getOpenAIClient(apiKey);
     
-    console.log('📤 Sending request to OpenAI...');
-    
     const response = await retryWithBackoff(async () => {
       return await client.chat.completions.create({
         model: OPENAI_CONFIG.model,
@@ -230,8 +225,6 @@ Format your response as JSON with this structure:
         max_tokens: OPENAI_CONFIG.maxTokens,
       });
     });
-    
-    console.log('✅ Received response from OpenAI');
     
     // Parse response
     const content = response.choices[0].message.content;
@@ -253,8 +246,6 @@ Format your response as JSON with this structure:
         timestamp: new Date().toISOString()
       }));
     }
-    
-    console.log(`🎉 Analysis complete! Generated ${analysis.insights?.length || 0} insights`);
     
     return {
       success: true,
@@ -290,8 +281,6 @@ Format your response as JSON with this structure:
  * Generate AI-powered chart suggestions
  */
 export const suggestChartWithAI = async (csvData, columns, apiKey = null) => {
-  console.log('📊 Generating AI chart suggestions...');
-  
   if (!csvData || csvData.length === 0 || !columns || columns.length === 0) {
     throw new Error('No data or columns provided');
   }
@@ -345,8 +334,6 @@ Format as JSON:
     const content = response.choices[0].message.content;
     const suggestions = JSON.parse(content);
     
-    console.log(`✅ Generated ${suggestions.suggestions?.length || 0} chart suggestions`);
-    
     // Return both a top-level `suggestions` array and the full `data` object
     // so callers that expect `result.suggestions` (ChartConfigurator) or
     // `result.data` (other callers) will both work.
@@ -367,8 +354,6 @@ Format as JSON:
  * Answer natural language questions about the data
  */
 export const answerQuestion = async (question, csvData, columns, apiKey = null) => {
-  console.log(`💬 Answering question: "${question}"`);
-  
   if (!question || question.trim().length === 0) {
     throw new Error('No question provided');
   }
@@ -408,8 +393,6 @@ Provide a clear, concise answer based on the data. Include specific numbers and 
     });
     
     const answer = response.choices[0].message.content;
-    
-    console.log('✅ Question answered');
     
     return {
       success: true,
