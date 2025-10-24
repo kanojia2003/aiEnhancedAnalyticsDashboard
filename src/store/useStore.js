@@ -14,6 +14,7 @@ const useStore = create((set) => ({
   uploadedFiles:  [],
   csvData: null,
   dataHeaders: [],
+  dataColumns: [],
   dataStats: {},
   isProcessing: false,
   uploadError: null,
@@ -44,6 +45,10 @@ const useStore = create((set) => ({
   toggleDarkMode: () => set((state) => ({ darkMode: !state.darkMode })),
   setDarkMode: (mode) => set({ darkMode: mode }),
   
+  // Export Modal
+  showExportModal: false,
+  setShowExportModal: (show) => set({ showExportModal: show }),
+  
   // Chart Configurations
   chartConfigs: [],
   addChartConfig: (config) => set((state) => ({
@@ -71,11 +76,10 @@ const useStore = create((set) => ({
   // AI Chat State
   aiChatMessages: [],              // Chat history
   aiChatLoading: false,            // Loading state for chat
-  
-  // AI Configuration
-  openaiApiKey: null,              // User's API key (runtime override)
+          // User's API key (runtime override)
   aiProvider: 'openai',            // AI provider (future: support others)
   aiAutoGenerate: false,           // Auto-generate insights on data upload (disabled to avoid rate limits)
+
   
   // AI Actions
   setAiInsights: (insights) => set({ 
@@ -107,7 +111,6 @@ const useStore = create((set) => ({
   setAiChatLoading: (loading) => set({ aiChatLoading: loading }),
   
   // API Key Management
-  setOpenaiApiKey: (key) => set({ openaiApiKey: key }),
   setAiAutoGenerate: (auto) => set({ aiAutoGenerate: auto }),
 
 }))

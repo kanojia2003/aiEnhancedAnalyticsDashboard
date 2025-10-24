@@ -10,7 +10,7 @@ import DashboardPage from './pages/DashboardPage'
 import UploadDataPage from './pages/UploadDataPage'
 import AIInsightsPage from './pages/AIInsightsPage'
 import ReportsPage from './pages/ReportsPage'
-import SettingsPage from './pages/SettingsPage'
+
 
 function App() {
   const { currentPage, darkMode, setDarkMode } = useStore()
@@ -52,8 +52,6 @@ function App() {
         return <AIInsightsPage />
       case 'reports':
         return <ReportsPage />
-      case 'settings':
-        return <SettingsPage />
       default:
         return <DashboardPage />
     }

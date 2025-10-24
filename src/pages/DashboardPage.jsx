@@ -5,8 +5,6 @@ import {
   Upload,
   AlertCircle,
   LayoutGrid,
-  Download,
-  RefreshCw,
 } from 'lucide-react';
 import useStore from '../store/useStore';
 import ChartConfigurator from '../components/ChartConfigurator';
@@ -64,13 +62,7 @@ const DashboardPage = () => {
     });
   };
 
-  // Handle refresh data
-  const handleRefresh = () => {
-    // Force re-render by updating configs
-    chartConfigs.forEach(config => {
-      updateChartConfig(config.id, { ...config });
-    });
-  };
+  // Note: Refresh button removed (was non-functional)
 
   // No data uploaded state
   if (!csvData || csvData.length === 0) {
@@ -99,28 +91,14 @@ const DashboardPage = () => {
           <h1 className="text-3xl font-bold text-white mb-2">Dashboard Overview</h1>
           <p className="text-gray-400">
             {chartConfigs.length > 0
-              ? `Displaying ${chartConfigs.length} chart${chartConfigs.length !== 1 ? 's' : ''} from ${dataStats?.rowCount || 0} rows`
+              ? `Displaying ${chartConfigs.length} chart${chartConfigs.length !== 1 ? 's' : ''} from ${dataStats?.totalRows || 0} rows`
               : 'Create charts to visualize your data'}
           </p>
         </div>
         <div className="flex items-center gap-3">
           {chartConfigs.length > 0 && (
             <>
-              <button
-                onClick={handleRefresh}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
-                title="Refresh charts"
-              >
-                <RefreshCw className="w-4 h-4" />
-                <span className="hidden sm:inline">Refresh</span>
-              </button>
-              <button
-                className="flex items-center gap-2 px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
-                title="Export dashboard"
-              >
-                <Download className="w-4 h-4" />
-                <span className="hidden sm:inline">Export</span>
-              </button>
+              {/* Refresh removed - not required */}
             </>
           )}
           <button
@@ -160,7 +138,7 @@ const DashboardPage = () => {
               <LayoutGrid className="w-8 h-8 text-green-400" />
               <div>
                 <p className="text-sm text-gray-400">Data Rows</p>
-                <p className="text-2xl font-bold text-white">{dataStats.rowCount?.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-white">{dataStats.totalRows?.toLocaleString?.()}</p>
               </div>
             </div>
           </motion.div>
@@ -175,7 +153,7 @@ const DashboardPage = () => {
               <LayoutGrid className="w-8 h-8 text-purple-400" />
               <div>
                 <p className="text-sm text-gray-400">Columns</p>
-                <p className="text-2xl font-bold text-white">{dataStats.columnCount}</p>
+                <p className="text-2xl font-bold text-white">{dataStats.totalColumns}</p>
               </div>
             </div>
           </motion.div>

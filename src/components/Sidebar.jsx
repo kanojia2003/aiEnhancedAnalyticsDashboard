@@ -10,7 +10,7 @@ const Sidebar = () => {
     { id: 'upload', label: 'Upload Data', icon: Upload },
     { id: 'insights', label: 'AI Insights', icon: Lightbulb },
     { id: 'reports', label: 'Reports', icon: FileText },
-    { id: 'settings', label: 'Settings', icon: Settings },
+    
   ]
 
   return (

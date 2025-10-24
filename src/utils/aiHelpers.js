@@ -228,9 +228,7 @@ export const setCachedResponse = (key, data) => {
   });
 };
 
-export const clearCache = () => {
-  cache.clear();
-};
+
 
 /**
  * Generate cache key from data
@@ -289,7 +287,6 @@ export default {
   getPriorityStyle,
   getCachedResponse,
   setCachedResponse,
-  clearCache,
   generateCacheKey,
   formatDataQuality
 };

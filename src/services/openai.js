@@ -347,8 +347,12 @@ Format as JSON:
     
     console.log(`✅ Generated ${suggestions.suggestions?.length || 0} chart suggestions`);
     
+    // Return both a top-level `suggestions` array and the full `data` object
+    // so callers that expect `result.suggestions` (ChartConfigurator) or
+    // `result.data` (other callers) will both work.
     return {
       success: true,
+      suggestions: suggestions.suggestions || [],
       data: suggestions,
       usage: response.usage
     };
@@ -419,47 +423,7 @@ Provide a clear, concise answer based on the data. Include specific numbers and 
   }
 };
 
-/**
- * Test API connection
- */
-export const testConnection = async (apiKey = null) => {
-  console.log('🔌 Testing OpenAI connection...');
-  
-  try {
-    const client = getOpenAIClient(apiKey);
-    
-    const response = await client.chat.completions.create({
-      model: 'gpt-3.5-turbo',
-      messages: [
-        { role: 'user', content: 'Say "Connected" if you receive this message.' }
-      ],
-      max_tokens: 10,
-    });
-    
-    console.log('✅ Connection successful');
-    
-    return {
-      success: true,
-      message: 'Successfully connected to OpenAI',
-      model: response.model
-    };
-    
-  } catch (error) {
-    console.error('❌ Connection failed:', error);
-    
-    if (error.status === 401) {
-      return {
-        success: false,
-        message: 'Invalid API key. Please check your OpenAI API key.'
-      };
-    }
-    
-    return {
-      success: false,
-      message: error.message || 'Connection failed'
-    };
-  }
-};
+
 
 /**
  * Export service functions
@@ -468,6 +432,5 @@ export default {
   analyzeData,
   suggestChartWithAI,
   answerQuestion,
-  testConnection,
   isConfigured: isOpenAIConfigured
 };

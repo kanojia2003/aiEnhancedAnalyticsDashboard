@@ -358,7 +358,7 @@ const AIInsightsPage = () => {
           >
             <BarChart3 className="w-8 h-8 text-blue-400 mb-2" />
             <p className="text-sm text-gray-400">Total Rows</p>
-            <p className="text-2xl font-bold text-white">{dataStats.rowCount?.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-white">{dataStats.totalRows?.toLocaleString?.()}</p>
           </motion.div>
 
           <motion.div
@@ -369,7 +369,7 @@ const AIInsightsPage = () => {
           >
             <Activity className="w-8 h-8 text-green-400 mb-2" />
             <p className="text-sm text-gray-400">Columns</p>
-            <p className="text-2xl font-bold text-white">{dataStats.columnCount}</p>
+            <p className="text-2xl font-bold text-white">{dataStats.totalColumns}</p>
           </motion.div>
 
           <motion.div

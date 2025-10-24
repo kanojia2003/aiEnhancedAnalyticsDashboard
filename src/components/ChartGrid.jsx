@@ -305,6 +305,7 @@ const ChartCard = ({ config, data, index, onEdit, onDelete, isExpanded, onToggle
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
       className="bg-gray-800 rounded-2xl p-6 border border-gray-700 hover:border-gray-600 transition-colors"
+      data-chart-id={config.id}
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
